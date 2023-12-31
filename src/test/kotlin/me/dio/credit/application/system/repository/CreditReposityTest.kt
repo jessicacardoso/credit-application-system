@@ -52,6 +52,17 @@ class CreditReposityTest {
 
     }
 
+    @Test fun `should find all credits by customer id`() {
+        // given
+        val customerId: Long = 1L
+        // when
+        val fakeCredits: List<Credit> = creditRepository.findAllByCustomerId(customerId)
+        // then
+        Assertions.assertThat(fakeCredits).isNotEmpty
+        Assertions.assertThat(fakeCredits).hasSize(2)
+        Assertions.assertThat(fakeCredits).contains(credit1, credit2)
+    }
+
 
     private fun buildCredit(
         creditValue: BigDecimal = BigDecimal.valueOf(500.0),
