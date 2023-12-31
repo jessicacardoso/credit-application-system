@@ -3,7 +3,9 @@ package me.dio.credit.application.system.repository
 import me.dio.credit.application.system.entity.Address
 import me.dio.credit.application.system.entity.Credit
 import me.dio.credit.application.system.entity.Customer
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -12,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.Month
+import java.util.UUID
 
 @ActiveProfiles("test")
 @DataJpaTest
@@ -30,6 +33,23 @@ class CreditReposityTest {
         customer = testEntityManager.persist(buildCustomer())
         credit1 = testEntityManager.persist(buildCredit(customer = customer))
         credit2 = testEntityManager.persist(buildCredit(customer = customer))
+    }
+
+    @Test fun `should find credit by credit code`() {
+        // given
+        val creditCode1 = UUID.fromString("aae4c5e0-0b1a-4c7a-8b9a-9b9b9b9b9b9b")
+        val creditCode2 = UUID.fromString("bbf4c5e0-0b1a-4c7a-8b9a-9b9b9b9b9b9b")
+        credit1.creditCode = creditCode1
+        credit2.creditCode = creditCode2
+        // when
+        val fakeCredit1: Credit = creditRepository.findByCreditCode(creditCode1)!!
+        val fakeCredit2: Credit = creditRepository.findByCreditCode(creditCode2)!!
+        // then
+        Assertions.assertThat(fakeCredit1).isNotNull()
+        Assertions.assertThat(fakeCredit2).isNotNull()
+        Assertions.assertThat(fakeCredit1.creditCode).isEqualTo(creditCode1)
+        Assertions.assertThat(fakeCredit2.creditCode).isEqualTo(creditCode2)
+
     }
 
 
