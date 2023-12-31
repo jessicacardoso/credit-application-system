@@ -25,8 +25,10 @@ import java.math.BigDecimal
 class CustomerResourceTest {
     @Autowired
     private lateinit var customerRepository: CustomerRepository
+
     @Autowired
     private lateinit var mockMvc: MockMvc
+
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
@@ -36,6 +38,7 @@ class CustomerResourceTest {
 
     @BeforeEach
     fun setUp() = customerRepository.deleteAll()
+
     @AfterEach
     fun tearDown() = customerRepository.deleteAll()
 
@@ -44,11 +47,13 @@ class CustomerResourceTest {
     fun `should create a customer and return 201 status`() {
         // given
         val customerDto: CustomerDto = builderCustomerDto()
-        val valueAsString:String = objectMapper.writeValueAsString(customerDto)
+        val valueAsString: String = objectMapper.writeValueAsString(customerDto)
         // when
-        mockMvc.perform(MockMvcRequestBuilders.post(URL)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(valueAsString))
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(URL)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(valueAsString)
+        )
             // then
             .andExpect(MockMvcResultMatchers.status().isCreated)
             .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Cami"))
@@ -67,11 +72,13 @@ class CustomerResourceTest {
         // given
         val customerDto: CustomerDto = builderCustomerDto()
         customerRepository.save(customerDto.toEntity())
-        val valueAsString:String = objectMapper.writeValueAsString(customerDto)
+        val valueAsString: String = objectMapper.writeValueAsString(customerDto)
         // when
-        mockMvc.perform(MockMvcRequestBuilders.post(URL)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(valueAsString))
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(URL)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(valueAsString)
+        )
             // then
             .andExpect(MockMvcResultMatchers.status().isConflict)
             .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("Conflict! Consult the documentation"))
@@ -83,6 +90,31 @@ class CustomerResourceTest {
             )
             .andExpect(MockMvcResultMatchers.jsonPath("$.details[*]").isNotEmpty)
             .andDo(MockMvcResultHandlers.print())
+    }
+
+    @Test
+    fun `should not save a customer with firstName empty and return 400 status`() {
+        // given
+        val customerDto: CustomerDto = builderCustomerDto(firstName = "")
+        val valueAsString: String = objectMapper.writeValueAsString(customerDto)
+        // when
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(URL)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(valueAsString)
+        )
+            // then
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("Bad Request! Consult the documentation"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(400))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath("$.exception")
+                    .value("class org.springframework.web.bind.MethodArgumentNotValidException")
+            )
+            .andExpect(MockMvcResultMatchers.jsonPath("$.details[*]").isNotEmpty)
+            .andDo(MockMvcResultHandlers.print())
+
     }
 
     private fun builderCustomerDto(
