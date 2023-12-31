@@ -62,6 +62,29 @@ class CustomerResourceTest {
             .andDo(MockMvcResultHandlers.print())
     }
 
+    @Test
+    fun `should not save a customer with same CPF and return 409 status`() {
+        // given
+        val customerDto: CustomerDto = builderCustomerDto()
+        customerRepository.save(customerDto.toEntity())
+        val valueAsString:String = objectMapper.writeValueAsString(customerDto)
+        // when
+        mockMvc.perform(MockMvcRequestBuilders.post(URL)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(valueAsString))
+            // then
+            .andExpect(MockMvcResultMatchers.status().isConflict)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("Conflict! Consult the documentation"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(409))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath("$.exception")
+                    .value("class org.springframework.dao.DataIntegrityViolationException")
+            )
+            .andExpect(MockMvcResultMatchers.jsonPath("$.details[*]").isNotEmpty)
+            .andDo(MockMvcResultHandlers.print())
+    }
+
     private fun builderCustomerDto(
         firstName: String = "Cami",
         lastName: String = "Cavalcante",
