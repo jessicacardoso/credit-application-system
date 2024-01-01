@@ -117,6 +117,29 @@ class CustomerResourceTest {
 
     }
 
+    @Test
+    fun `should find customer by id and return 200 status`() {
+        // given
+        val customerDto: CustomerDto = builderCustomerDto()
+        val customer = customerRepository.save(customerDto.toEntity())
+        // when
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$URL/${customer.id}")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            // then
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Cami"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Cavalcante"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.cpf").value("28475934625"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("camila@email.com"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.income").value("1000.0"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.zipCode").value("000000"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.street").value("Rua da Cami, 123"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1L))
+            .andDo(MockMvcResultHandlers.print())
+    }
+
     private fun builderCustomerDto(
         firstName: String = "Cami",
         lastName: String = "Cavalcante",
