@@ -6,6 +6,7 @@ import me.dio.credit.application.system.repository.CreditRepository
 import me.dio.credit.application.system.service.ICreditService
 import org.springframework.stereotype.Service
 import java.lang.IllegalArgumentException
+import java.time.LocalDate
 import java.util.*
 
 @Service
@@ -16,6 +17,10 @@ class CreditService(
   override fun save(credit: Credit): Credit {
     credit.apply {
       customer = customerService.findById(credit.customer?.id!!)
+    }
+  // a primeira parcela não pode ser depois de 90 dias
+    if (credit.dayFirstInstallment.isAfter(LocalDate.now().plusDays(90))) {
+      throw BusinessException("The first installment cannot be after 90 days")
     }
     return this.creditRepository.save(credit)
   }
